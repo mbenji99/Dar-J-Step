@@ -1,16 +1,16 @@
-const mysql = require('mysql');
+require('dotenv').config();
+const mysql = require('mysql2');
 
-// Create a connection to the MySQL database (MariaDB)
 const db = mysql.createConnection({
-    host: 'localhost', // MySQL is running on the local machine
-    user: 'root',      // MySQL username (default is 'root')
-    password: '061502kp',  // New password you set for 'root'
-    database: 'attendance_system' // Replace with your actual database name
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
 });
 
 db.connect((err) => {
     if (err) {
-        console.error('Error connecting to the database: ', err);
+        console.error('Error connecting to the database: ', err.message);
         return;
     }
     console.log('Connected to the database.');
