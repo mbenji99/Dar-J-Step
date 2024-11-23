@@ -19,23 +19,22 @@ exports.getShiftById = (req, res) => {
 
 // Create a new shift
 exports.createShift = (req, res) => {
-  const { shiftID, startTime, endTime, breaks } = req.body;
-  const newShift = new Shift(shiftID, startTime, endTime, breaks);
+  const { employee_id,shiftID, startTime, endTime} = req.body;
+  const newShift = new Shift(employee_id,shiftID, startTime, endTime);
   shifts.push(newShift);
   res.status(201).json({ success: true, message: "Shift created", data: newShift });
 };
 
-// Update a shift
-exports.updateShift = (req, res) => {
+// Edit a shift
+exports.editShift = (req, res) => {
   const { id } = req.params;
-  const { startTime, endTime, breaks } = req.body;
+  const { startTime, endTime } = req.body;
   const shift = shifts.find((s) => s.shiftID === parseInt(id));
   if (!shift) {
     return res.status(404).json({ success: false, message: "Shift not found" });
   }
   if (startTime) shift.startTime = startTime;
   if (endTime) shift.endTime = endTime;
-  if (breaks) shift.breaks = breaks;
   res.status(200).json({ success: true, message: "Shift updated", data: shift });
 };
 
