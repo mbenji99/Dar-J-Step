@@ -54,3 +54,62 @@ exports.clockIn = (req, res) => {
         );
     });
 };
+
+exports.clockOut = (req, res) => {
+    const { employee_id } = req.body;
+
+    if (!employee_id) {
+        return res.status(400).json({ error: 'Employee ID is required' });
+    }
+
+    console.log(`Clock-out request received for employee_id: ${employee_id}`);
+
+    // Find the most recent clock-in record with no clock-out time
+    db.query(
+        'SELECT * FROM clock_in_out_logs WHERE employee_id = ? AND clock_out_time IS NULL ORDER BY clock_in_time DESC LIMIT 1',
+        [employee_id],
+        (err, result) => {
+            if (err) {
+                console.error('Error querying database:', err);
+                return res.status(500).json({ error: 'Database query failed' });
+            }
+
+            if (result.length === 0) {
+                console.log('No active clock-in record found for employee:', employee_id);
+                return res.status(404).json({ error: 'No active clock-in record found for this employee' });
+            }
+
+            const clockInRecord = result[0];
+            const clockOutTime = new Date();
+
+            console.log('Updating clock-out time for log_id:', clockInRecord.log_id);
+
+            // Update the record with the clock-out time
+            db.query(
+                'UPDATE clock_in_out_logs SET clock_out_time = ? WHERE log_id = ?',
+                [clockOutTime, clockInRecord.log_id],
+                (err, updateResult) => {
+                    if (err) {
+                        console.error('Error updating clock-out time:', err);
+                        return res.status(500).json({ error: 'Failed to log clock-out time' });
+                    }
+
+                    console.log('Clock-out updated for log_id:', clockInRecord.log_id);
+
+                    // Calculate duration
+                    const clockInTime = new Date(clockInRecord.clock_in_time);
+                    const durationMs = clockOutTime - clockInTime;
+                    const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
+                    const durationMinutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+
+                    return res.status(200).json({
+                        message: 'Clock-out successful',
+                        clock_in_time: clockInRecord.clock_in_time,
+                        clock_out_time: clockOutTime,
+                        duration: `${durationHours} hours and ${durationMinutes} minutes`,
+                    });
+                }
+            );
+        }
+    );
+};
