@@ -87,4 +87,25 @@ exports.viewShifts = (req, res) => {
     });
 };
 
-//Add the delete shift function Steph
+exports.deleteShift = (req, res) => {
+    const { shift_id } = req.params;
+
+    if (!shift_id) {
+        return res.status(400).json({ error: 'Shift ID is required' });
+    }
+
+    const deleteQuery = 'DELETE FROM shifts WHERE shift_id = ?';
+
+    db.query(deleteQuery, [shift_id], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Failed to delete shift' });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Shift not found' });
+        }
+
+        return res.status(200).json({ message: 'Shift deleted successfully' });
+    });
+};
+
