@@ -68,7 +68,10 @@ exports.createShift = (req, res) => {
     );
 };
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 exports.viewShifts = (req, res) => {
     const { employee_id, password } = req.body; // Require employee_id and password
 
