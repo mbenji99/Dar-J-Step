@@ -1,8 +1,7 @@
 CREATE TABLE IF NOT EXISTS employees (
     employee_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    clock_in_time DATETIME,
-    clock_out_time DATETIME
+    employee_name VARCHAR(255) NOT NULL,
+    password VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS logs (
@@ -23,7 +22,18 @@ CREATE TABLE IF NOT EXISTS schedules (
 
 CREATE TABLE IF NOT EXISTS shifts (
     shift_id INT AUTO_INCREMENT PRIMARY KEY,
-    shift_start DATETIME,
-    shift_end DATETIME,
-    staffing_needed INT
+    employee_id INT NOT NULL,
+    shift_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
 );
+
+
+CREATE TABLE login_attempts (
+    attempt_id INT AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    timestamp DATETIME NOT NULL,
+    FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+);
+
