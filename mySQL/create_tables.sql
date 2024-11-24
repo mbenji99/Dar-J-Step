@@ -1,3 +1,10 @@
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(100) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS employees (
     employeeID INT AUTO_INCREMENT PRIMARY KEY,
     employeeName VARCHAR(255) NOT NULL,
@@ -36,4 +43,5 @@ CREATE TABLE login_attempts (
     timestamp DATETIME NOT NULL,
     FOREIGN KEY (employeeID) REFERENCES employees(employeeID)
 );
+
 

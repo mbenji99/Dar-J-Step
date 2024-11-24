@@ -4,7 +4,7 @@ const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const clockInRoutes = require('./routes/clockinroutes');
 const shiftRoutes = require('./routes/shiftRoutes');
-const scheduleRoutes = require('./routes/scheduleRoute');
+const scheduleRoutes = require('./routes/scheduleRoutes');
 const managerRoutes = require('./routes/managerRoutes');
 const app = express();
 
