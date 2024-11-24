@@ -1,17 +1,27 @@
 const db = require('../config/db');
 
 // Add a new schedule
-const addSchedule = (employeeId, shiftStart, shiftEnd, callback) => {
+const addSchedule = (employeeId, date, shiftDetails, callback) => {
     db.query(
-        'INSERT INTO schedules (employee_id, shift_start, shift_end) VALUES (?, ?, ?)',
-        [employeeId, shiftStart, shiftEnd],
+        'INSERT INTO schedules (employee_id, date, shift_details) VALUES (?, ?, ?)',
+        [employeeId, date, shiftDetails],
         callback
     );
 };
 
-// Fetch all schedules
+// Get all schedules
 const getAllSchedules = (callback) => {
     db.query('SELECT * FROM schedules', callback);
 };
 
-module.exports = { addSchedule, getAllSchedules };
+// Get a schedule by ID
+const getScheduleById = (scheduleId, callback) => {
+    db.query('SELECT * FROM schedules WHERE schedule_id = ?', [scheduleId], callback);
+};
+
+// Delete a schedule
+const deleteSchedule = (scheduleId, callback) => {
+    db.query('DELETE FROM schedules WHERE schedule_id = ?', [scheduleId], callback);
+};
+
+module.exports = { addSchedule, getAllSchedules, getScheduleById, deleteSchedule };
