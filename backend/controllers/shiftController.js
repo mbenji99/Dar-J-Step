@@ -87,6 +87,7 @@ exports.viewShifts = (req, res) => {
     });
 };
 
+//Deletes shift
 exports.deleteShift = (req, res) => {
     const { shift_id } = req.params;
 
@@ -109,3 +110,50 @@ exports.deleteShift = (req, res) => {
     });
 };
 
+//Edits Shift
+exports.editShift = (req, res) => {
+    const { shift_id, new_details } = req.body; // new_details should contain any of the shift details that can be edited
+    if (!shift_id || !new_details) {
+        return res.status(400).json({ error: 'Shift ID and new shift details are required' });
+    }
+    // Assuming new_details is an object with possible keys: employee_id, shift_date, start_time, end_time, role
+    const { employee_id, shift_date, start_time, end_time, role } = new_details;
+    
+    // SQL to update shift details, checking if each field is provided to update it
+    let updateQuery = 'UPDATE shifts SET ';
+    let queryValues = [];
+    let firstValue = true;
+    if (employee_id) {
+        updateQuery += 'employee_id = ?';
+        queryValues.push(employee_id);
+        firstValue = false;
+    }
+    if (shift_date) {
+        updateQuery += (firstValue ? '' : ', ') + 'shift_date = ?';
+        queryValues.push(shift_date);
+        firstValue = false;
+    }
+    if (start_time) {
+        updateQuery += (firstValue ? '' : ', ') + 'start_time = ?';
+        queryValues.push(start_time);
+        firstValue = false;
+    }
+    if (end_time) {
+        updateQuery += (firstValue ? '' : ', ') + 'end_time = ?';
+        queryValues.push(end_time);
+        firstValue = false;
+    }
+    if (role) {
+        updateQuery += (firstValue ? '' : ', ') + 'role = ?';
+        queryValues.push(role);
+    }
+    updateQuery += ' WHERE shift_id = ?';
+    queryValues.push(shift_id);
+
+    db.query(updateQuery, queryValues, (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: 'Database query failed' });
+        }
+        return res.status(200).json({ message: 'Shift edited successfully' });
+    });
+};
