@@ -3,7 +3,6 @@ const db = require('../config/db');
 const shiftController = require('./shiftController');
 
 
-
 exports.generateReport = (req, res) => {
     // Implementation for generating reports
     res.status(200).json({ message: 'Report generated successfully' });
