@@ -2,10 +2,10 @@
 const db = require('../config/db'); // Database connection
 
 exports.createShift = (req, res) => {
-    const { employee_id, shift_date, start_time, end_time, role } = req.body;
+    const { employee_id, shift_date, start_time, end_time } = req.body;
 
     // Validate required fields
-    if (!employee_id || !shift_date || !start_time || !end_time || !role) {
+    if (!employee_id || !shift_date || !start_time || !end_time) {
         return res.status(400).json({ error: 'All fields are required' });
     }
 
@@ -13,6 +13,9 @@ exports.createShift = (req, res) => {
     if (new Date(`1970-01-01T${end_time}`) <= new Date(`1970-01-01T${start_time}`)) {
         return res.status(400).json({ error: 'End time must be after start time' });
     }
+
+    // Log inputs for debugging
+    console.log('Received shift data:', { employee_id, shift_date, start_time, end_time });
 
     // Check for overlapping shifts
     const overlapQuery = `
@@ -30,27 +33,34 @@ exports.createShift = (req, res) => {
         [employee_id, shift_date, start_time, start_time, end_time, end_time],
         (err, result) => {
             if (err) {
+                console.error('Database query error:', err);
                 return res.status(500).json({ error: 'Database query failed' });
             }
 
+            // Debug overlap query result
+            console.log('Overlap query result:', result);
+
             if (result.length > 0) {
+                console.log('Shift overlap detected:', result);
                 return res.status(409).json({ error: 'Shift overlaps with an existing shift' });
             }
 
             // Insert the shift into the database
             const insertQuery = `
-                INSERT INTO shifts (employee_id, shift_date, start_time, end_time, role)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO shifts (employee_id, shift_date, start_time, end_time)
+                VALUES (?, ?, ?, ?)
             `;
 
             db.query(
                 insertQuery,
-                [employee_id, shift_date, start_time, end_time, role],
-                (err) => {
+                [employee_id, shift_date, start_time, end_time],
+                (err, result) => {
                     if (err) {
+                        console.error('Error inserting shift:', err);
                         return res.status(500).json({ error: 'Failed to create shift' });
                     }
 
+                    console.log('Shift created successfully:', result);
                     return res.status(201).json({ message: 'Shift created successfully' });
                 }
             );
@@ -58,36 +68,61 @@ exports.createShift = (req, res) => {
     );
 };
 
-// View shifts function
+
 exports.viewShifts = (req, res) => {
-    const { employee_id } = req.query; // Use query parameters for filtering
+    const { employee_id, password } = req.body; // Require employee_id and password
 
-    // Base query to fetch shifts
-    let query = 'SELECT * FROM shifts';
-    const params = [];
-
-    // If employee_id is provided, filter by it
-    if (employee_id) {
-        query += ' WHERE employee_id = ?';
-        params.push(employee_id);
+    // Validate required fields
+    if (!employee_id || !password) {
+        return res.status(400).json({ error: 'Employee ID and password are required' });
     }
 
-    // Execute the query
-    db.query(query, params, (err, results) => {
+    // Query to validate employee credentials
+    db.query('SELECT * FROM employees WHERE employee_id = ?', [employee_id], (err, result) => {
         if (err) {
-            console.error('Error fetching shifts:', err);
-            return res.status(500).json({ error: 'Failed to fetch shifts' });
+            return res.status(500).json({ error: 'Database query failed' });
         }
 
-        // Return the results
-        return res.status(200).json({
-            message: 'Shifts retrieved successfully',
-            shifts: results,
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'Employee not found' });
+        }
+
+        const employee = result[0];
+
+        // Verify password
+        if (employee.password !== password) {
+            return res.status(401).json({ error: 'Incorrect password' });
+        }
+
+        // Fetch shifts for the employee
+        const query = 'SELECT * FROM shifts WHERE employee_id = ?';
+        db.query(query, [employee_id], (err, results) => {
+            if (err) {
+                console.error('Error fetching shifts:', err);
+                return res.status(500).json({ error: 'Failed to fetch shifts' });
+            }
+
+            // Format the results with day of the week
+            const formattedShifts = results.map((shift) => {
+                const shiftDate = new Date(shift.shift_date);
+                const dayOfWeek = shiftDate.toLocaleString('en-US', { weekday: 'long' });
+
+                return {
+                    ...shift,
+                    day_of_week: dayOfWeek,
+                    formatted_date: shiftDate.toLocaleDateString('en-US'),
+                };
+            });
+
+            return res.status(200).json({
+                message: 'Shifts retrieved successfully',
+                shifts: formattedShifts,
+            });
         });
     });
 };
 
-//Deletes shift
+
 exports.deleteShift = (req, res) => {
     const { shift_id } = req.params;
 
@@ -110,50 +145,6 @@ exports.deleteShift = (req, res) => {
     });
 };
 
-//Edits Shift
-exports.editShift = (req, res) => {
-    const { shift_id, new_details } = req.body; // new_details should contain any of the shift details that can be edited
-    if (!shift_id || !new_details) {
-        return res.status(400).json({ error: 'Shift ID and new shift details are required' });
-    }
-    // Assuming new_details is an object with possible keys: employee_id, shift_date, start_time, end_time, role
-    const { employee_id, shift_date, start_time, end_time, role } = new_details;
-    
-    // SQL to update shift details, checking if each field is provided to update it
-    let updateQuery = 'UPDATE shifts SET ';
-    let queryValues = [];
-    let firstValue = true;
-    if (employee_id) {
-        updateQuery += 'employee_id = ?';
-        queryValues.push(employee_id);
-        firstValue = false;
-    }
-    if (shift_date) {
-        updateQuery += (firstValue ? '' : ', ') + 'shift_date = ?';
-        queryValues.push(shift_date);
-        firstValue = false;
-    }
-    if (start_time) {
-        updateQuery += (firstValue ? '' : ', ') + 'start_time = ?';
-        queryValues.push(start_time);
-        firstValue = false;
-    }
-    if (end_time) {
-        updateQuery += (firstValue ? '' : ', ') + 'end_time = ?';
-        queryValues.push(end_time);
-        firstValue = false;
-    }
-    if (role) {
-        updateQuery += (firstValue ? '' : ', ') + 'role = ?';
-        queryValues.push(role);
-    }
-    updateQuery += ' WHERE shift_id = ?';
-    queryValues.push(shift_id);
 
-    db.query(updateQuery, queryValues, (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: 'Database query failed' });
-        }
-        return res.status(200).json({ message: 'Shift edited successfully' });
-    });
-};
+
+

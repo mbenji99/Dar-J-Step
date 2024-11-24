@@ -4,7 +4,5 @@ const shiftController = require('../controllers/shiftController');
 
 router.post('/create-shift',shiftController.createShift);
 router.get('/view-shifts',shiftController.viewShifts);
-router.get('/delete-shift',shiftController.deleteShift);
-router.post('/edit-shift',shiftController.editShift);
-
+router.delete('/delete-shift/:shift_id',shiftController.deleteShift);
 module.exports = router;
