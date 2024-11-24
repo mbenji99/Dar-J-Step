@@ -11,13 +11,13 @@ CREATE TABLE IF NOT EXISTS clock_in_out_logs (
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
 );
 
-
 CREATE TABLE IF NOT EXISTS schedules (
     schedule_id INT AUTO_INCREMENT PRIMARY KEY,
     employee_id INT NOT NULL,
     date DATE NOT NULL,
     shift_details VARCHAR(255),
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+    DELETE FROM schedules WHERE schedule_id = ?;
 );
 
 CREATE TABLE IF NOT EXISTS shifts (
@@ -28,4 +28,5 @@ CREATE TABLE IF NOT EXISTS shifts (
     end_time TIME NOT NULL,
     role VARCHAR(255) NOT NULL,
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+    SELECT * FROM schedules WHERE employee_id = ?;
 );
