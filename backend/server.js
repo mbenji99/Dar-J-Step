@@ -4,6 +4,7 @@ const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const clockInRoutes = require('./routes/clockinroutes');
 const shiftRoutes = require('./routes/shiftRoutes');
+const scheduleRoutes = require('./routes/scheduleRoute');
 const app = express();
 
 // Middleware to parse JSON request body
@@ -14,6 +15,7 @@ app.use(bodyParser.json());
 // Use the clock-in routes
 app.use('/api', clockInRoutes);
 app.use('/api/shifts', shiftRoutes);
+app.use('./api',scheduleRoutes);
 
 // Start the server
 const port = 3000;
