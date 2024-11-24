@@ -2,10 +2,10 @@
 const db = require('../config/db'); // Database connection
 
 exports.createShift = (req, res) => {
-    const { employee_id, shift_date, start_time, end_time } = req.body;
+    const { employeeID, shift_date, start_time, end_time } = req.body;
 
     // Validate required fields
-    if (!employee_id || !shift_date || !start_time || !end_time) {
+    if (!employeeID || !shift_date || !start_time || !end_time) {
         return res.status(400).json({ error: 'All fields are required' });
     }
 
@@ -15,12 +15,12 @@ exports.createShift = (req, res) => {
     }
 
     // Log inputs for debugging
-    console.log('Received shift data:', { employee_id, shift_date, start_time, end_time });
+    console.log('Received shift data:', { employeeID, shift_date, start_time, end_time });
 
     // Check for overlapping shifts
     const overlapQuery = `
         SELECT * FROM shifts 
-        WHERE employee_id = ? 
+        WHERE employeeID = ? 
         AND shift_date = ?
         AND (
             (start_time <= ? AND end_time > ?) OR
@@ -30,7 +30,7 @@ exports.createShift = (req, res) => {
 
     db.query(
         overlapQuery,
-        [employee_id, shift_date, start_time, start_time, end_time, end_time],
+        [employeeID, shift_date, start_time, start_time, end_time, end_time],
         (err, result) => {
             if (err) {
                 console.error('Database query error:', err);
@@ -47,13 +47,13 @@ exports.createShift = (req, res) => {
 
             // Insert the shift into the database
             const insertQuery = `
-                INSERT INTO shifts (employee_id, shift_date, start_time, end_time)
+                INSERT INTO shifts (employeeID, shift_date, start_time, end_time)
                 VALUES (?, ?, ?, ?)
             `;
 
             db.query(
                 insertQuery,
-                [employee_id, shift_date, start_time, end_time],
+                [employeeID, shift_date, start_time, end_time],
                 (err, result) => {
                     if (err) {
                         console.error('Error inserting shift:', err);
@@ -68,20 +68,16 @@ exports.createShift = (req, res) => {
     );
 };
 
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
 exports.viewShifts = (req, res) => {
-    const { employee_id, password } = req.body; // Require employee_id and password
+    const { employeeID, password } = req.body; // Require employeeID and password
 
     // Validate required fields
-    if (!employee_id || !password) {
+    if (!employeeID || !password) {
         return res.status(400).json({ error: 'Employee ID and password are required' });
     }
 
     // Query to validate employee credentials
-    db.query('SELECT * FROM employees WHERE employee_id = ?', [employee_id], (err, result) => {
+    db.query('SELECT * FROM employees WHERE employeeID = ?', [employeeID], (err, result) => {
         if (err) {
             return res.status(500).json({ error: 'Database query failed' });
         }
@@ -98,8 +94,8 @@ exports.viewShifts = (req, res) => {
         }
 
         // Fetch shifts for the employee
-        const query = 'SELECT * FROM shifts WHERE employee_id = ?';
-        db.query(query, [employee_id], (err, results) => {
+        const query = 'SELECT * FROM shifts WHERE employeeID = ?';
+        db.query(query, [employeeID], (err, results) => {
             if (err) {
                 console.error('Error fetching shifts:', err);
                 return res.status(500).json({ error: 'Failed to fetch shifts' });
@@ -127,15 +123,15 @@ exports.viewShifts = (req, res) => {
 
 
 exports.deleteShift = (req, res) => {
-    const { shift_id } = req.params;
+    const { shiftID } = req.params;
 
-    if (!shift_id) {
+    if (!shiftID) {
         return res.status(400).json({ error: 'Shift ID is required' });
     }
 
-    const deleteQuery = 'DELETE FROM shifts WHERE shift_id = ?';
+    const deleteQuery = 'DELETE FROM shifts WHERE shiftID = ?';
 
-    db.query(deleteQuery, [shift_id], (err, result) => {
+    db.query(deleteQuery, [shiftID], (err, result) => {
         if (err) {
             return res.status(500).json({ error: 'Failed to delete shift' });
         }

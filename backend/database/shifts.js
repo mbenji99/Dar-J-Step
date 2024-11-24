@@ -1,10 +1,10 @@
 const db = require('../config/db');
 
 // Add a new shift
-const addShift = (employeeId, shiftDate, startTime, endTime, role, callback) => {
+const addShift = (employeeID, shiftDate, startTime, endTime, role, callback) => {
     db.query(
-        'INSERT INTO shifts (employee_id, shift_date, start_time, end_time, role) VALUES (?, ?, ?, ?, ?)',
-        [employeeId, shiftDate, startTime, endTime, role],
+        'INSERT INTO shifts (employeeID, shift_date, start_time, end_time, role) VALUES (?, ?, ?, ?, ?)',
+        [employeeID, shiftDate, startTime, endTime, role],
         callback
     );
 };
@@ -15,12 +15,12 @@ const getAllShifts = (callback) => {
 };
 
 // Delete a shift
-const deleteShift = (shiftId, callback) => {
-    db.query('DELETE FROM shifts WHERE shift_id = ?', [shiftId], callback);
+const deleteShift = (shiftID, callback) => {
+    db.query('DELETE FROM shifts WHERE shiftID = ?', [shiftID], callback);
 };
 
 // Check for overlapping shifts
-const checkShiftOverlap = (employeeId, shiftDate, startTime, endTime, callback) => {
+const checkShiftOverlap = (employeeID, shiftDate, startTime, endTime, callback) => {
     const overlapQuery = `
         SELECT * FROM shifts
         WHERE employee_id = ?
@@ -31,7 +31,7 @@ const checkShiftOverlap = (employeeId, shiftDate, startTime, endTime, callback) 
             (start_time < ? AND end_time >= ?)
         )
     `;
-    db.query(overlapQuery, [employeeId, shiftDate, startTime, startTime, endTime, endTime], callback);
+    db.query(overlapQuery, [employeeID, shiftDate, startTime, startTime, endTime, endTime], callback);
 };
 
 module.exports = { addShift, getAllShifts, deleteShift, checkShiftOverlap };

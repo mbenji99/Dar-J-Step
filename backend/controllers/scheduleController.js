@@ -2,11 +2,11 @@ let schedules = []; // In-memory storage for schedules
 
 // Assign a shift to a specific day in the weekly schedule
 exports.assignShiftToDay = (req, res) => {
-  const { id, day } = req.params; // Extract schedule ID and day from the URL
+  const { scheduleID, day } = req.params; // Extract schedule ID and day from the URL
   const { shiftDetails } = req.body; // Extract shift details from the request body
 
   // Find the schedule by ID
-  const schedule = schedules.find((s) => s.schedule_id === parseInt(id));
+  const schedule = schedules.find((s) => s.scheduleID === parseInt(id));
   if (!schedule) {
     return res.status(404).json({ success: false, message: "Schedule not found" });
   }
@@ -29,10 +29,10 @@ exports.assignShiftToDay = (req, res) => {
 
 // Create a new schedule
 exports.createSchedule = (req, res) => {
-  const { schedule_id, shiftDetails, date } = req.body;
+  const { scheduleID, shiftDetails, date } = req.body;
 
   // Validate required fields
-  if (!schedule_id || !shiftDetails || !date) {
+  if (!scheduleID || !shiftDetails || !date) {
     return res.status(400).json({ success: false, message: "All fields are required" });
   }
 
@@ -44,7 +44,7 @@ exports.createSchedule = (req, res) => {
   }));
 
   const newSchedule = {
-    schedule_id,
+    scheduleID,
     shiftDetails, // General shift details (e.g., default shifts or notes)
     date,
     weekSchedule, // Add the table with days of the week
@@ -67,8 +67,8 @@ exports.getAllSchedules = (req, res) => {
 
 // Get a schedule by ID
 exports.getScheduleById = (req, res) => {
-  const { id } = req.params;
-  const schedule = schedules.find((s) => s.schedule_id === parseInt(id));
+  const { scheduleID } = req.params;
+  const schedule = schedules.find((s) => s.scheduleID === parseInt(scheduleID));
   if (!schedule) {
     return res.status(404).json({ success: false, message: "Schedule not found" });
   }
@@ -78,7 +78,7 @@ exports.getScheduleById = (req, res) => {
 exports.editSchedule = (req, res) => {
   const { id } = req.params;
   const { shiftDetails, date } = req.body;
-  const schedule = schedules.find((sched) => sched.schedule_id === parseInt(id));
+  const schedule = schedules.find((sched) => sched.scheduleID === parseInt(scheduleID));
   if (!schedule) {
     return res.status(404).json({ success: false, message: "Schedule not found" });
   }
@@ -93,7 +93,7 @@ exports.editSchedule = (req, res) => {
 
 exports.deleteSchedule = (req, res) => {
   const { id } = req.params;
-  const index = schedules.findIndex((sched) => sched.schedule_id === parseInt(id));
+  const index = schedules.findIndex((sched) => sched.scheduleID === parseInt(scheduleID));
   if (index === -1) {
     return res.status(404).json({ success: false, message: "Schedule not found" });
   }

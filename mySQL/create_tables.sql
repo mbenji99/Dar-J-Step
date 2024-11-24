@@ -1,28 +1,28 @@
 CREATE TABLE IF NOT EXISTS employees (
-    employee_id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_name VARCHAR(255) NOT NULL,
+    employeeID INT AUTO_INCREMENT PRIMARY KEY,
+    employeeName VARCHAR(255) NOT NULL,
     password VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS logs (
-    log_id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_id INT,
-    action_type ENUM('clock_in', 'clock_out'),
+    logID INT AUTO_INCREMENT PRIMARY KEY,
+    employeeID INT,
+    actionType ENUM('clock_in', 'clock_out'),
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+    FOREIGN KEY (employeeID) REFERENCES employees(employeeID)
 );
 
 CREATE TABLE IF NOT EXISTS schedules (
-    schedule_id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_id INT,
+    scheduleID INT AUTO_INCREMENT PRIMARY KEY,
+    employeeID INT,
     shift_start DATETIME,
     shift_end DATETIME,
-    FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+    FOREIGN KEY (employeeID) REFERENCES employees(employeeID)
 );
 
 CREATE TABLE IF NOT EXISTS shifts (
-    shift_id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_id INT NOT NULL,
+    shiftID INT AUTO_INCREMENT PRIMARY KEY,
+    employeeID INT NOT NULL,
     shift_date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
@@ -30,10 +30,10 @@ CREATE TABLE IF NOT EXISTS shifts (
 
 
 CREATE TABLE login_attempts (
-    attempt_id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_id INT NOT NULL,
+    attemptID INT AUTO_INCREMENT PRIMARY KEY,
+    employeeID INT NOT NULL,
     status VARCHAR(50) NOT NULL,
     timestamp DATETIME NOT NULL,
-    FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+    FOREIGN KEY (employeeID) REFERENCES employees(employeeID)
 );
 
