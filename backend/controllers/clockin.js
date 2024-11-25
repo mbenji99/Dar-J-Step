@@ -2,20 +2,20 @@
 const db = require('../config/db'); // Your database connection file
 
 exports.clockIn = (req, res) => {
-    const { employeeID } = req.body;
+    const { employee_id } = req.body;
 
-    if (!employeeID) {
+    if (!employee_id) {
         return res.status(400).json({ error: 'Employee ID is required' });
     }
 
-    // Validate employeeID format (e.g., must be numeric)
+    // Validate employee_id format (e.g., must be numeric)
     const idPattern = /^[0-9]+$/;
-    if (!idPattern.test(employeeID)) {
+    if (!idPattern.test(employee_id)) {
         return res.status(400).json({ error: 'Invalid Employee ID format' });
     }
 
     // Ensure the employee exists in the database (optional: Insert if missing)
-    db.query('SELECT * FROM employees WHERE employeeID = ?', [employeeID], (err, result) => {
+    db.query('SELECT * FROM employees WHERE employee_id = ?', [employee_id], (err, result) => {
         if (err) {
             return res.status(500).json({ error: 'Database query failed while checking employee.' });
         }
@@ -23,13 +23,13 @@ exports.clockIn = (req, res) => {
         if (result.length === 0) {
             // Optional: Add a new employee if not found (for testing purposes)
             db.query(
-                'INSERT INTO employees (employeeID, employee_name) VALUES (?, ?)',
-                [employeeID, 'Test Employee'],
+                'INSERT INTO employees (employee_id, employee_name) VALUES (?, ?)',
+                [employee_id, 'Test Employee'],
                 (insertErr) => {
                     if (insertErr) {
                         return res.status(500).json({ error: 'Failed to insert new employee for testing.' });
                     }
-                    console.log(`Test employee with ID ${employeeID} added to database.`);
+                    console.log(`Test employee with ID ${employee_id} added to database.`);
                 }
             );
 
@@ -39,8 +39,8 @@ exports.clockIn = (req, res) => {
         // Log the clock-in time
         const clockInTime = new Date();
         db.query(
-            'INSERT INTO clock_in_out_logs (employeeID, clock_in_time) VALUES (?, ?)',
-            [employeeID, clockInTime],
+            'INSERT INTO clock_in_out_logs (employee_id, clock_in_time) VALUES (?, ?)',
+            [employee_id, clockInTime],
             (err) => {
                 if (err) {
                     return res.status(500).json({ error: 'Failed to log clock-in time' });
@@ -56,18 +56,18 @@ exports.clockIn = (req, res) => {
 };
 
 exports.clockOut = (req, res) => {
-    const { employeeID } = req.body;
+    const { employee_id } = req.body;
 
-    if (!employeeID) {
+    if (!employee_id) {
         return res.status(400).json({ error: 'Employee ID is required' });
     }
 
-    console.log(`Clock-out request received for employeeID: ${employeeID}`);
+    console.log(`Clock-out request received for employee_id: ${employee_id}`);
 
     // Find the most recent clock-in record with no clock-out time
     db.query(
-        'SELECT * FROM clock_in_out_logs WHERE employeeID = ? AND clock_out_time IS NULL ORDER BY clock_in_time DESC LIMIT 1',
-        [employeeID],
+        'SELECT * FROM clock_in_out_logs WHERE employee_id = ? AND clock_out_time IS NULL ORDER BY clock_in_time DESC LIMIT 1',
+        [employee_id],
         (err, result) => {
             if (err) {
                 console.error('Error querying database:', err);
@@ -75,26 +75,26 @@ exports.clockOut = (req, res) => {
             }
 
             if (result.length === 0) {
-                console.log('No active clock-in record found for employee:', employeeID);
+                console.log('No active clock-in record found for employee:', employee_id);
                 return res.status(404).json({ error: 'No active clock-in record found for this employee' });
             }
 
             const clockInRecord = result[0];
             const clockOutTime = new Date();
 
-            console.log('Updating clock-out time for logID:', clockInRecord.logID);
+            console.log('Updating clock-out time for log_id:', clockInRecord.log_id);
 
             // Update the record with the clock-out time
             db.query(
-                'UPDATE clock_in_out_logs SET clock_out_time = ? WHERE logID = ?',
-                [clockOutTime, clockInRecord.logID],
+                'UPDATE clock_in_out_logs SET clock_out_time = ? WHERE log_id = ?',
+                [clockOutTime, clockInRecord.log_id],
                 (err, updateResult) => {
                     if (err) {
                         console.error('Error updating clock-out time:', err);
                         return res.status(500).json({ error: 'Failed to log clock-out time' });
                     }
 
-                    console.log('Clock-out updated for logID:', clockInRecord.logID);
+                    console.log('Clock-out updated for log_id:', clockInRecord.log_id);
 
                     // Calculate duration
                     const clockInTime = new Date(clockInRecord.clock_in_time);
