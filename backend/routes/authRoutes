@@ -24,4 +24,19 @@ router.get('/login-failure', (req, res) => {
     res.status(401).json({ error: 'Invalid manager credentials.' });
 });
 
+router.get('/logout', (req, res) => {
+    // Passport's built-in logout method
+    req.logout(function(err) {
+        if (err) {
+            return res.status(500).json({ error: 'Failed to log out.' });
+        }
+        // Clear the session and cookies if necessary
+        req.session.destroy(() => {
+            res.clearCookie('connect.sid'); // Remove the session cookie if applicable
+            return res.status(200).json({ message: 'Logged out successfully.' });
+        });
+    });
+});
+
+
 module.exports = router;
