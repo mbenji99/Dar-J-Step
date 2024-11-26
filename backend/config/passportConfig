@@ -1,0 +1,46 @@
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const db = require('../config/db'); // Your database connection configuration
+console.log('Passport local strategy configuration loaded.');
+
+
+// Passport local strategy for manager authentication
+passport.use(new LocalStrategy({
+    usernameField: 'manager_id',
+    passwordField: 'password'
+}, (manager_id, password, done) => {
+    // Query to check manager credentials in the database
+    const query = 'SELECT * FROM managers WHERE manager_id = ? AND password = ?';
+    db.query(query, [manager_id, password], (err, results) => {
+        if (err) {
+            return done(err);
+        }
+        if (results.length === 0) {
+            return done(null, false, { message: 'Invalid manager credentials.' });
+        }
+
+        const user = results[0];
+        return done(null, user);
+    });
+}));
+
+// Serialize user to store user information in session
+passport.serializeUser((user, done) => {
+    done(null, user.manager_id);
+});
+
+// Deserialize user from session using managerID
+passport.deserializeUser((manager_id, done) => {
+    const query = 'SELECT * FROM managers WHERE manager_id = ?';
+    db.query(query, [manager_id], (err, results) => {
+        if (err) {
+            return done(err);
+        }
+        if (results.length === 0) {
+            return done(null, false);
+        }
+        return done(null, results[0]);
+    });
+});
+
+module.exports = passport;

@@ -11,8 +11,8 @@ const addEmployee = (name, callback) => {
 };
 
 // Find employee by ID
-const findEmployeeById = (employeeID, callback) => {
-    db.query('SELECT * FROM employees WHERE employeeID = ?', [employeeID], callback);
+const findEmployeeById = (employee_id, callback) => {
+    db.query('SELECT * FROM employees WHERE employeeID = ?', [employee_id], callback);
 };
 
 module.exports = { getAllEmployees, addEmployee, findEmployeeById };

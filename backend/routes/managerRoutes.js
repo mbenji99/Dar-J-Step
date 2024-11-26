@@ -1,24 +1,42 @@
-const ensureAuthenticated = require('../middleware/auth').ensureAuthenticated;
-const checkRole = require('../middleware/auth').checkRole;
 const express = require('express');
 const router = express.Router();
-const ManagerController = require('../controllers/managerController');
+const managerController = require('../controllers/managerController');
+const shiftController = require('../controllers/shiftController');
+const { verifyManagerLogin } = require('../middleware/authMiddleware');
+const { ensureAuthenticated } = require('../middleware/authMiddleware');
+console.log(managerController);
+const passport = require('passport');
 
-// Apply middleware to all manager routes to ensure only authenticated users with 
-//the manager role can access them
-router.use(ensureAuthenticated);
-router.use(checkRole('Manager'));
 
-// Now define your routes
-router.post('/schedules', ManagerController.createSchedule);
-router.get('/schedules', ManagerController.getAllSchedules);
-router.post('/schedules', ManagerController.createSchedule);
-router.get('/schedules', ManagerController.getAllSchedules);
-router.get('/schedules/:id', ManagerController.getScheduleById);
-router.put('/schedules/:id', ManagerController.editSchedule);
-router.delete('/schedules/:id', ManagerController.deleteSchedule);
-router.put('/schedules/:id/assign-day', ManagerController.assignShiftToDay);
+// Login route for managers
+router.get('/login', passport.authenticate('local', {
+    successRedirect: '/api/manager/dashboard', // Redirect on successful login
+    failureRedirect: '/api/manager/login-failure', // Redirect on failure
+    failureMessage: true
+}));
+
+router.get('/dashboard', ensureAuthenticated, (req, res) => {
+    res.status(200).json({ message: 'Welcome to the manager dashboard.' });
+});
+
+
+// Report Generation (Requires Manager Login)
+router.get('/generate-report', verifyManagerLogin, managerController.generateReport);
+
+// Adjust clock-in/out times (Requires Manager Login)
+router.put('/adjust-clockinout', verifyManagerLogin, managerController.adjustClockInOut);
+
+// Manage Individual Shifts (Create, Edit, Delete) (Requires Manager Login)
+router.post('/create-shift', verifyManagerLogin, managerController.createShift); // Create a new shift
+router.put('/edit-shift/:shift_id', verifyManagerLogin, managerController.editShift); // Edit a shift by ID
+router.delete('/delete-shift/:shift_id', verifyManagerLogin, managerController.deleteShift); // Delete a shift by ID
+
+// Manage Shifts (General operations, Requires Manager Login)
+router.post('/manage-shift', verifyManagerLogin, managerController.manageShift);
+router.delete('/manage-shift', verifyManagerLogin, managerController.manageShift);
+
+// Manage Schedules (Higher-level operations, Requires Manager Login)
+router.post('/manage-schedule', verifyManagerLogin, managerController.manageSchedule);
+router.delete('/manage-schedule', verifyManagerLogin, managerController.manageSchedule);
 
 module.exports = router;
-
-

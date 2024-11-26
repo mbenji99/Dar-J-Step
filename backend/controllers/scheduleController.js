@@ -96,10 +96,6 @@ exports.createSchedule = (req, res) => {
   });
 };
 
-
-
-
-
 exports.getAllSchedules = (req, res) => {
   const query = `
       SELECT 
@@ -156,8 +152,6 @@ exports.getAllSchedules = (req, res) => {
       });
   });
 };
-
-
 
 
 exports.editSchedule = (req, res) => {

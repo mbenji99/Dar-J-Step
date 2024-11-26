@@ -1,5 +1,7 @@
-// controllers/createShift.js
 const db = require('../config/db'); // Database connection
+
+
+// Create a shift
 exports.createShift = (req, res) => {
     const { employee_id, shift_date, start_time, end_time } = req.body;
 
@@ -51,8 +53,7 @@ exports.createShift = (req, res) => {
     });
 };
 
-
-
+// View shifts
 exports.viewShifts = (req, res) => {
     const { employee_id, password } = req.body; // Require employee_id and password
 
@@ -106,7 +107,7 @@ exports.viewShifts = (req, res) => {
     });
 };
 
-
+// Delete a shift
 exports.deleteShift = (req, res) => {
     const { shift_id } = req.params;
 
@@ -129,6 +130,37 @@ exports.deleteShift = (req, res) => {
     });
 };
 
+// Edit a shift
+exports.editShift = (req, res) => {
+    const { shift_id } = req.params;
+    const { shift_date, start_time, end_time } = req.body;
 
+    // Validate required fields
+    if (!shift_id || !shift_date || !start_time || !end_time) {
+        return res.status(400).json({ error: 'Shift ID, date, start time, and end time are required' });
+    }
 
-//Add the delete shift function Steph
+    // Ensure end_time is after start_time
+    if (new Date(`1970-01-01T${end_time}`) <= new Date(`1970-01-01T${start_time}`)) {
+        return res.status(400).json({ error: 'End time must be after start time' });
+    }
+
+    const updateQuery = `
+        UPDATE shifts
+        SET shift_date = ?, start_time = ?, end_time = ?
+        WHERE shift_id = ?
+    `;
+
+    db.query(updateQuery, [shift_date, start_time, end_time, shift_id], (err, result) => {
+        if (err) {
+            console.error('Error updating shift:', err);
+            return res.status(500).json({ error: 'Failed to update shift' });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Shift not found' });
+        }
+
+        return res.status(200).json({ message: 'Shift updated successfully' });
+    });
+};
