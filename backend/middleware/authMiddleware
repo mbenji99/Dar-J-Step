@@ -30,6 +30,32 @@ exports.verifyManagerLogin = (req, res, next) => {
     });
 };
 
+// Middleware function to verify employee login
+exports.verifyEmployeeLogin = (req, res, next) => {
+    const { employee_id, password } = req.headers;
+
+    if (!employee_id || !password) {
+        return res.status(401).json({ error: 'Authentication required: Missing credentials.' });
+    }
+
+    // Verify credentials (Example database check)
+    db.query('SELECT * FROM employees WHERE employee_id = ? AND password = ?', [employee_id, password], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: 'Database error while verifying credentials.' });
+        }
+
+        if (results.length === 0) {
+            return res.status(403).json({ error: 'Invalid employee credentials.' });
+        }
+
+        const user = results[0];
+
+        // If credentials are valid, proceed to the next function
+        next();
+    });
+};
+
+
 // middleware/authMiddleware.js
 exports.ensureAuthenticated = (req, res, next) => {
     if (req.isAuthenticated()) {
