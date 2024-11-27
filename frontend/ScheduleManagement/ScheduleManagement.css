@@ -1,0 +1,135 @@
+/* General styling */
+/* General styling */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #e6f2ff; /* Light blue background */
+  color: #333;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Container for the form */
+.shift-manager-container {
+  text-align: center;
+  padding: 30px;
+  border-radius: 10px;
+  background-color: #ffffff; /* White background for the form */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 700px;
+  display: flex;
+  flex-direction: column;  /* Stack form elements vertically */
+  gap: 15px;  /* Add spacing between form fields */
+}
+
+/* Form header */
+.shift-manager-container h1 {
+  font-size: 24px;
+  color: #004080; /* Dark blue header text */
+  margin-bottom: 20px;
+}
+
+/* Form label */
+.label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #0066cc; /* Blue label text */
+}
+
+/* Input field */
+.input, .textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #b3c6e0; /* Light blue border */
+  border-radius: 5px;
+}
+
+.textarea {
+  resize: none;
+  height: 100px; /* Fixed height for text area */
+}
+
+/* Buttons container */
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Buttons */
+.button {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff; /* White text */
+  background-color: #0066cc; /* Blue button */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* Hover effect for buttons */
+.button:hover {
+  background-color: #004080; /* Darker blue on hover */
+}
+
+/* Success and error messages */
+.message {
+  margin-top: 20px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.message.success {
+  color: #007d00; /* Green for success */
+}
+
+.message.error {
+  color: #cc0000; /* Red for error */
+}
+
+/* Shift list styling */
+.shift-list {
+  list-style-type: none;
+  padding-left: 0;
+  text-align: left;
+  margin-top: 20px;
+}
+
+.shift-item {
+  margin-bottom: 10px;
+  font-size: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.edit-button {
+  padding: 5px 10px;
+  font-size: 14px;
+  color: #fff;
+  background-color: #28A745; /* Green for Edit button */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.edit-button:hover {
+  background-color: #218838; /* Darker green on hover */
+}
+
+.reset-button {
+  background-color: #FF5733; /* Red for Reset button */
+  font-size: 16px;
+}
+
+.reset-button:hover {
+  background-color: #c13520; /* Darker red on hover */
+}
