@@ -1,3 +1,4 @@
+//App.js
 import React from 'react';
 import ClockInOut from './components/ClockInOut'; // Import your custom component
 
@@ -11,3 +12,5 @@ function App() {
 }
 
 export default App;
+
+is this code completed?

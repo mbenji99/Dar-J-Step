@@ -1,45 +1,37 @@
+// Updated managerRoutes.js
 const express = require('express');
 const router = express.Router();
 const managerController = require('../controllers/managerController');
 const shiftController = require('../controllers/shiftController');
 const scheduleController = require('../controllers/scheduleController');
-const { verifyManagerLogin } = require('../middleware/authMiddleware');
-const { ensureAuthenticated } = require('../middleware/authMiddleware');
-console.log(managerController);
+const { verifyManagerLogin, ensureAuthenticated } = require('../middleware/authMiddleware');
 const passport = require('passport');
 
-
-// Login route for managers
+// Manager login route
 router.get('/login', passport.authenticate('local', {
-    successRedirect: '/api/manager/dashboard', // Redirect on successful login
-    failureRedirect: '/api/manager/login-failure', // Redirect on failure
-    failureMessage: true
+  successRedirect: '/api/manager/dashboard',
+  failureRedirect: '/api/manager/login-failure',
+  failureMessage: true,
 }));
 
+// Dashboard
 router.get('/dashboard', ensureAuthenticated, (req, res) => {
-    res.status(200).json({ message: 'Welcome to the manager dashboard.' });
+  res.status(200).json({ message: 'Welcome to the manager dashboard.' });
 });
 
-
-// Report Generation (Requires Manager Login)
+// Reporting
 router.get('/generate-report', verifyManagerLogin, managerController.generateReport);
 
-// Adjust clock-in/out times (Requires Manager Login)
+// Adjust clock-in/out
 router.put('/adjust-clockinout', verifyManagerLogin, managerController.adjustClockInOut);
 
-// Manage Individual Shifts (Create, Edit, Delete) (Requires Manager Login)
-router.post('/create-shift', verifyManagerLogin, managerController.createShift); // Create a new shift
-router.put('/edit-shift/:shift_id', verifyManagerLogin, managerController.editShift); // Edit a shift by ID
-router.delete('/delete-shift/:shift_id', verifyManagerLogin, managerController.deleteShift); // Delete a shift by ID
-router.get('/view-shift', verifyManagerLogin, shiftController.viewShifts);
+// Shift management
+router.post('/create-shift', verifyManagerLogin, shiftController.createShift);
+router.put('/edit-shift/:shift_id', verifyManagerLogin, shiftController.editShift);
+router.delete('/delete-shift/:shift_id', verifyManagerLogin, shiftController.deleteShift);
+router.get('/view-shift', verifyManagerLogin, shiftController.viewShifts); // ✅ fix
+
+// Schedule management
 router.get('/view-schedule', verifyManagerLogin, scheduleController.viewSchedule);
-
-// Manage Shifts (General operations, Requires Manager Login)
-router.post('/manage-shift', verifyManagerLogin, managerController.manageShift);
-router.delete('/manage-shift', verifyManagerLogin, managerController.manageShift);
-
-// Manage Schedules (Higher-level operations, Requires Manager Login)
-router.post('/manage-schedule', verifyManagerLogin, managerController.manageSchedule);
-router.delete('/manage-schedule', verifyManagerLogin, managerController.manageSchedule);
 
 module.exports = router;

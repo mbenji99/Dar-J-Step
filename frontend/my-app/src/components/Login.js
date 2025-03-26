@@ -10,7 +10,7 @@ function Login({ role: initialRole }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const location = useLocation();
-  const navigate = useNavigate(); // Add navigate hook
+  const navigate = useNavigate();
 
   useEffect(() => {
     const path = location.pathname;
@@ -28,47 +28,47 @@ function Login({ role: initialRole }) {
         role === "manager"
           ? "http://localhost:3000/api/login/manager"
           : "http://localhost:3000/api/login/employee";
-  
+
       const payload = {
         password,
         [role === "manager" ? "manager_id" : "employee_id"]: userId,
       };
-  
+
       const response = await axios.post(endpoint, payload, {
         headers: {
           "Content-Type": "application/json",
         },
       });
-  
+
       console.log("Login successful:", response.data);
-  
-      // Store credentials in localStorage
+
+      // ✅ Store login info in localStorage
       if (role === "employee") {
         localStorage.setItem("employee-id", response.data.user.employee_id);
         localStorage.setItem("password", password);
       }
 
-      if(role === 'manager'){
-        localStorage.setItem("manager-id",response.data.user.manager_id);
-        localStorage.setItem("password",password);
+      if (role === "manager") {
+        localStorage.setItem("manager-id", response.data.user.manager_id);
+        localStorage.setItem("password", password);
       }
-  
+
       setSuccess(response.data.message || "Login successful");
-      setError(""); // Clear any error on success
-  
-      // Navigate based on role
+      setError("");
+
+      // Redirect to dashboard
       if (role === "employee") {
-        navigate("/employee-dashboard"); // Navigate to Employee Dashboard
+        navigate("/employee-dashboard");
       } else if (role === "manager") {
-        navigate("/manager-dashboard"); // Update this when adding Manager Dashboard
+        navigate("/manager-dashboard");
       }
+
     } catch (err) {
-      console.error("Login error response:", err.response || err.message);
+      console.error("Login error:", err.response || err.message);
       setError(err.response?.data?.error || "Login failed");
-      setSuccess(""); // Clear any success on error
+      setSuccess("");
     }
   };
-  
 
   return (
     <div className="login-container">

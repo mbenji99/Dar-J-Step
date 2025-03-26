@@ -1,191 +1,144 @@
-const db = require('../config/db'); // Database connection
+const db = require('../config/db');
+const bcrypt = require('bcrypt');
 
+// ✅ Create Shift (Manager only)
 exports.createShift = (req, res) => {
-    const manager_id = req.headers['manager-id'];
-    const password = req.headers['password1'];
-    const { employee_id, shift_date, start_time, end_time } = req.body;
+  const manager_id = req.headers['manager-id'];
+  const password = req.headers['password1'];
+  const { employee_id, shift_date, start_time, end_time } = req.body;
 
-    console.log('Headers received:', { manager_id, password });
-    console.log('Body received:', { employee_id, shift_date, start_time, end_time });
+  if (!manager_id || !password) {
+    return res.status(401).json({ error: 'Authentication required: Missing credentials.' });
+  }
 
-    if (!manager_id || !password) {
-        console.log('Authentication failed: Missing credentials');
-        return res.status(401).json({ error: 'Authentication required: Missing credentials.' });
-    }
+  if (!employee_id || !shift_date || !start_time || !end_time) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
 
-    if (!employee_id || !shift_date || !start_time || !end_time) {
-        console.log('Validation failed: Missing fields');
-        return res.status(400).json({ error: 'All fields are required' });
-    }
+  if (new Date(`1970-01-01T${end_time}`) <= new Date(`1970-01-01T${start_time}`)) {
+    return res.status(400).json({ error: 'End time must be after start time' });
+  }
 
-    // Example: Log validation of shift timings
-    if (new Date(`1970-01-01T${end_time}`) <= new Date(`1970-01-01T${start_time}`)) {
-        console.log('Validation failed: End time must be after start time');
-        return res.status(400).json({ error: 'End time must be after start time' });
-    }
+  db.query('SELECT * FROM managers WHERE manager_id = ?', [manager_id], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Database query failed' });
+    if (result.length === 0) return res.status(404).json({ error: 'Manager not found' });
 
-    const singleShiftPerDayQuery = `
-        SELECT * FROM shifts
-        WHERE employee_id = ?
-        AND shift_date = ?
-    `;
+    const manager = result[0];
 
-    db.query(singleShiftPerDayQuery, [employee_id, shift_date], (err, result) => {
-        if (err) {
-            console.error('Database query error:', err);
-            return res.status(500).json({ error: 'Database query failed' });
-        }
+    bcrypt.compare(password, manager.password, (err, isMatch) => {
+      if (err) return res.status(500).json({ error: 'Password verification failed' });
+      if (!isMatch) return res.status(401).json({ error: 'Invalid manager credentials.' });
+
+      const checkQuery = `SELECT * FROM shifts WHERE employee_id = ? AND shift_date = ?`;
+      db.query(checkQuery, [employee_id, shift_date], (err, result) => {
+        if (err) return res.status(500).json({ error: 'Database query failed' });
 
         if (result.length > 0) {
-            console.log('Validation failed: Shift already exists for this date');
-            return res.status(409).json({ error: 'Employee already has a shift on this date' });
+          return res.status(409).json({ error: 'Employee already has a shift on this date' });
         }
 
-        const insertQuery = `
-            INSERT INTO shifts (employee_id, shift_date, start_time, end_time)
-            VALUES (?, ?, ?, ?)
-        `;
-
+        const insertQuery = `INSERT INTO shifts (employee_id, shift_date, start_time, end_time) VALUES (?, ?, ?, ?)`;
         db.query(insertQuery, [employee_id, shift_date, start_time, end_time], (err) => {
-            if (err) {
-                console.error('Error inserting shift:', err);
-                return res.status(500).json({ error: 'Failed to create shift' });
-            }
-            console.log('Shift created successfully:', { employee_id, shift_date, start_time, end_time });
-            res.status(201).json({ message: 'Shift created successfully' });
+          if (err) return res.status(500).json({ error: 'Failed to create shift' });
+          res.status(201).json({ message: 'Shift created successfully' });
         });
+      });
     });
+  });
 };
 
-
-// View shifts
+// ✅ View Shifts (Employee or Manager)
 exports.viewShifts = (req, res) => {
-    const employee_id = req.query.employee_id || req.body.employee_id || req.headers['employee-id'];
-    const password = req.query.password || req.body.password || req.headers['password'];
-    const manager_id = req.query.manager_id || req.body.manager_id || req.headers['manager-id'];
-    console.log('Request Query:', req.query);
-    console.log('Request Body:', req.body);
-    console.log('Request Headers:', req.headers);
+  const employee_id = req.query.employee_id || req.body.employee_id || req.headers['employee-id'];
+  const password = req.query.password || req.body.password || req.headers['password'];
+  const manager_id = req.query.manager_id || req.body.manager_id || req.headers['manager-id'];
 
+  if (employee_id && password) {
+    db.query('SELECT * FROM employees WHERE employee_id = ?', [employee_id], (err, result) => {
+      if (err) return res.status(500).json({ error: 'Database error while verifying employee.' });
+      if (result.length === 0) return res.status(404).json({ error: 'Employee not found.' });
 
+      const employee = result[0];
 
-    console.log('Employee ID:', employee_id);
-    console.log('Manager ID:', manager_id);
-    console.log('Password:', password);
+      bcrypt.compare(password, employee.password, (err, isMatch) => {
+        if (err) return res.status(500).json({ error: 'Password check failed.' });
+        if (!isMatch) return res.status(401).json({ error: 'Invalid credentials.' });
 
-    if (!employee_id && !manager_id) {
-        return res.status(400).json({ error: 'Employee ID or Manager ID is required' });
-    }
+        db.query('SELECT * FROM shifts WHERE employee_id = ?', [employee_id], (err, results) => {
+          if (err) return res.status(500).json({ error: 'Failed to fetch shifts' });
 
-    if (!password && !manager_id) {
-        return res.status(400).json({ error: 'Password or Manager ID is required' });
-    }
+          const formattedShifts = results.map(shift => ({
+            ...shift,
+            day_of_week: new Date(shift.shift_date).toLocaleString('en-US', { weekday: 'long' }),
+            formatted_date: new Date(shift.shift_date).toLocaleDateString('en-US'),
+          }));
 
-    if (employee_id && password) {
-        // Employee-specific shifts
-        db.query('SELECT * FROM employees WHERE employee_id = ?', [employee_id], (err, result) => {
-            if (err) {
-                return res.status(500).json({ error: 'Database query failed' });
-            }
-            if (result.length === 0) {
-                return res.status(404).json({ error: 'Employee not found' });
-            }
-            const employee = result[0];
-            if (employee.password !== password) {
-                return res.status(401).json({ error: 'Incorrect password' });
-            }
-            db.query('SELECT * FROM shifts WHERE employee_id = ?', [employee_id], (err, results) => {
-                if (err) {
-                    return res.status(500).json({ error: 'Failed to fetch shifts' });
-                }
-                const formattedShifts = results.map(shift => ({
-                    ...shift,
-                    day_of_week: new Date(shift.shift_date).toLocaleString('en-US', { weekday: 'long' }),
-                    formatted_date: new Date(shift.shift_date).toLocaleDateString('en-US'),
-                }));
-                res.status(200).json({ message: 'Shifts retrieved successfully', shifts: formattedShifts });
-            });
+          res.status(200).json({ message: 'Shifts retrieved successfully', shifts: formattedShifts });
         });
-    } else if (manager_id) {
-        // Manager-specific shifts
-        db.query('SELECT * FROM managers WHERE manager_id = ?', [manager_id], (err, result) => {
-            if (err) {
-                return res.status(500).json({ error: 'Database query failed' });
-            }
-            if (result.length === 0) {
-                return res.status(404).json({ error: 'Manager not found' });
-            }
-
-            // Fetch shifts assigned to the manager
-            db.query('SELECT * FROM shifts WHERE manager_id = ?', [manager_id], (err, results) => {
-                if (err) {
-                    return res.status(500).json({ error: 'Failed to fetch shifts' });
-                }
-
-                const formattedShifts = results.map(shift => ({
-                    ...shift,
-                    day_of_week: new Date(shift.shift_date).toLocaleString('en-US', { weekday: 'long' }),
-                    formatted_date: new Date(shift.shift_date).toLocaleDateString('en-US'),
-                }));
-
-                res.status(200).json({ message: 'Shifts retrieved successfully', shifts: formattedShifts });
-            });
-        });
-    }
-};
-
-
-
-// Delete a shift
-exports.deleteShift = (req, res) => {
-    const { shift_id } = req.params;
-
-    if (!shift_id) {
-        return res.status(400).json({ error: 'Shift ID is required' });
-    }
-
-    const deleteQuery = 'DELETE FROM shifts WHERE shift_id = ?';
-    db.query(deleteQuery, [shift_id], (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: 'Failed to delete shift' });
-        }
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Shift not found' });
-        }
-
-        res.status(200).json({ message: 'Shift deleted successfully' });
+      });
     });
+  } else if (manager_id) {
+    db.query('SELECT * FROM managers WHERE manager_id = ?', [manager_id], (err, result) => {
+      if (err) return res.status(500).json({ error: 'Database query failed' });
+      if (result.length === 0) return res.status(404).json({ error: 'Manager not found' });
+
+      db.query('SELECT * FROM shifts', (err, results) => {
+        if (err) return res.status(500).json({ error: 'Failed to fetch shifts' });
+
+        const formattedShifts = results.map(shift => ({
+          ...shift,
+          day_of_week: new Date(shift.shift_date).toLocaleString('en-US', { weekday: 'long' }),
+          formatted_date: new Date(shift.shift_date).toLocaleDateString('en-US'),
+        }));
+
+        res.status(200).json({ message: 'Shifts retrieved successfully', shifts: formattedShifts });
+      });
+    });
+  } else {
+    return res.status(400).json({ error: 'Missing required credentials' });
+  }
 };
 
-// Edit a shift
+// ✅ Edit Shift (Manager only)
 exports.editShift = (req, res) => {
-    const { shift_id } = req.params;
-    const { shift_date, start_time, end_time } = req.body;
+  const shift_id = req.params.shift_id;
+  const { shift_date, start_time, end_time } = req.body;
 
-    if (!shift_id || !shift_date || !start_time || !end_time) {
-        return res.status(400).json({ error: 'Shift ID, date, start time, and end time are required' });
+  if (!shift_id || !shift_date || !start_time || !end_time) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  const updateQuery = `
+    UPDATE shifts SET shift_date = ?, start_time = ?, end_time = ?
+    WHERE shift_id = ?
+  `;
+
+  db.query(updateQuery, [shift_date, start_time, end_time, shift_id], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Failed to update shift' });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Shift not found' });
     }
 
-    if (new Date(`1970-01-01T${end_time}`) <= new Date(`1970-01-01T${start_time}`)) {
-        return res.status(400).json({ error: 'End time must be after start time' });
+    res.status(200).json({ message: 'Shift updated successfully' });
+  });
+};
+
+// ✅ Delete Shift (Manager only)
+exports.deleteShift = (req, res) => {
+  const shift_id = req.params.shift_id;
+
+  if (!shift_id) {
+    return res.status(400).json({ error: 'Shift ID is required' });
+  }
+
+  const deleteQuery = 'DELETE FROM shifts WHERE shift_id = ?';
+
+  db.query(deleteQuery, [shift_id], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Failed to delete shift' });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Shift not found' });
     }
 
-    const updateQuery = `
-        UPDATE shifts
-        SET shift_date = ?, start_time = ?, end_time = ?
-        WHERE shift_id = ?
-    `;
-
-    db.query(updateQuery, [shift_date, start_time, end_time, shift_id], (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: 'Failed to update shift' });
-        }
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Shift not found' });
-        }
-
-        res.status(200).json({ message: 'Shift updated successfully' });
-    });
+    res.status(200).json({ message: 'Shift deleted successfully' });
+  });
 };
