@@ -1,65 +1,72 @@
 const db = require('../config/db');
 const shiftController = require('./shiftController'); // Not used directly here, but kept for future expansion
 
-//Clock-in
+// Clock In
 exports.clockIn = (req, res) => {
-    const { employee_id } = req.body;
+  const { employee_id } = req.body;
 
-    if (!employee_id) {
-        return res.status(400).json({ error: 'Employee ID is required to clock in.' });
-    }
+  if (!employee_id) return res.status(400).json({ error: 'Employee ID is required.' });
 
-    const clockInTime = new Date();
+  const clockInTime = new Date();
 
-    const query = `
-        INSERT INTO clock_in_out_logs (employee_id, clock_in_time)
-        VALUES (?, ?)
-    `;
+  const query = `
+    INSERT INTO clock_in_out_logs (employee_id, clock_in_time)
+    VALUES (?, ?)
+  `;
 
-    db.query(query, [employee_id, clockInTime], (err) => {
-        if (err) {
-            console.error('Clock-in error:', err);
-            return res.status(500).json({ error: 'Failed to clock in.' });
-        }
+  db.query(query, [employee_id, clockInTime], (err) => {
+    if (err) return res.status(500).json({ error: 'Clock-in failed.' });
 
-        res.status(200).json({
-            message: 'Clock-in successful',
-            timestamp: clockInTime,
-        });
+    res.status(200).json({
+      message: 'Clock-in successful',
+      timestamp: clockInTime,
     });
+  });
 };
 
-//Clock-out
+// Clock Out
 exports.clockOut = (req, res) => {
-    const { employee_id } = req.body;
+  const { employee_id } = req.body;
 
-    if (!employee_id) {
-        return res.status(400).json({ error: 'Employee ID is required to clock out.' });
+  if (!employee_id) return res.status(400).json({ error: 'Employee ID is required.' });
+
+  const clockOutTime = new Date();
+
+  const query = `
+    UPDATE clock_in_out_logs
+    SET clock_out_time = ?
+    WHERE employee_id = ? AND clock_out_time IS NULL
+  `;
+
+  db.query(query, [clockOutTime, employee_id], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Clock-out failed.' });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'No active clock-in found.' });
     }
 
-    const clockOutTime = new Date();
-
-    const query = `
-        UPDATE clock_in_out_logs
-        SET clock_out_time = ?
-        WHERE employee_id = ? AND clock_out_time IS NULL
-    `;
-
-    db.query(query, [clockOutTime, employee_id], (err, result) => {
-        if (err) {
-            console.error('Clock-out error:', err);
-            return res.status(500).json({ error: 'Failed to clock out.' });
-        }
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'No active clock-in found for this employee.' });
-        }
-
-        res.status(200).json({
-            message: 'Clock-out successful',
-            timestamp: clockOutTime,
-        });
+    res.status(200).json({
+      message: 'Clock-out successful',
+      timestamp: clockOutTime,
     });
+  });
+};
+
+// ✅ Check Clock-In Status
+exports.checkClockStatus = (req, res) => {
+  const { employee_id } = req.employee;
+
+  const query = `
+    SELECT * FROM clock_in_out_logs
+    WHERE employee_id = ? AND clock_out_time IS NULL
+    ORDER BY clock_in_time DESC LIMIT 1
+  `;
+
+  db.query(query, [employee_id], (err, results) => {
+    if (err) return res.status(500).json({ error: 'Database error checking clock status.' });
+
+    const isClockedIn = results.length > 0;
+    res.status(200).json({ clockedIn: isClockedIn });
+  });
 };
 
 //View Employee's Shifts

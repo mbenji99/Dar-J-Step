@@ -40,31 +40,27 @@ function Login({ role: initialRole }) {
         },
       });
 
-      console.log("Login successful:", response.data);
-
-      // ✅ Store login info in localStorage
-      if (role === "employee") {
-        localStorage.setItem("employee-id", response.data.user.employee_id);
-        localStorage.setItem("password", password);
-      }
-
-      if (role === "manager") {
-        localStorage.setItem("manager-id", response.data.user.manager_id);
-        localStorage.setItem("password", password);
-      }
+      console.log("✅ Login successful:", response.data);
 
       setSuccess(response.data.message || "Login successful");
       setError("");
 
-      // Redirect to dashboard
+      // Store login credentials in localStorage
       if (role === "employee") {
+        localStorage.setItem("employee-id", response.data.user.employee_id);
+        localStorage.setItem("password", password);
         navigate("/employee-dashboard");
       } else if (role === "manager") {
+        localStorage.setItem("manager-id", response.data.user.manager_id);
+        localStorage.setItem("password", password);
         navigate("/manager-dashboard");
       }
 
+      // Optional: reload to ensure auth headers update in React lifecycle
+      setTimeout(() => window.location.reload(), 100); 
+
     } catch (err) {
-      console.error("Login error:", err.response || err.message);
+      console.error("❌ Login error:", err.response || err.message);
       setError(err.response?.data?.error || "Login failed");
       setSuccess("");
     }
@@ -77,7 +73,9 @@ function Login({ role: initialRole }) {
       {success && <div className="success-message">{success}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="id">{role === "manager" ? "Manager ID" : "Employee ID"}:</label>
+          <label htmlFor="id">
+            {role === "manager" ? "Manager ID" : "Employee ID"}:
+          </label>
           <input
             type="text"
             id="id"

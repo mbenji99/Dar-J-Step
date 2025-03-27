@@ -1,52 +1,51 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 
-// ✅ Manager Login Middleware with bcrypt
-exports.verifyManagerLogin = (req, res, next) => {
-  const manager_id = req.body.manager_id || req.query.manager_id || req.headers['manager-id'];
-  const password = req.body.password || req.query.password || req.headers['password1'];
+// ✅ Manager Middleware
+const verifyManagerLogin = (req, res, next) => {
+  const manager_id = req.headers['manager-id'] || req.body.manager_id || req.query.manager_id;
+  const password = req.headers['password1'] || req.body.password || req.query.password;
+
+  console.log("🛂 Manager Auth Attempt:", { manager_id, password });
 
   if (!manager_id || !password) {
-    return res.status(401).json({ error: 'Authentication required: Missing credentials.' });
+    return res.status(401).json({ error: 'Missing manager credentials.' });
   }
 
   db.query('SELECT * FROM managers WHERE manager_id = ?', [manager_id], (err, results) => {
-    if (err) return res.status(500).json({ error: 'Database error while verifying credentials.' });
-    if (results.length === 0) return res.status(403).json({ error: 'Invalid manager ID.' });
+    if (err) return res.status(500).json({ error: 'DB error.' });
+    if (results.length === 0) return res.status(403).json({ error: 'Manager not found.' });
 
     const manager = results[0];
-
-    // ✅ Compare hashed password
     bcrypt.compare(password, manager.password, (err, isMatch) => {
-      if (err) return res.status(500).json({ error: 'Password check failed.' });
-      if (!isMatch) return res.status(403).json({ error: 'Invalid manager credentials.' });
+      if (err) return res.status(500).json({ error: 'Password error' });
+      if (!isMatch) return res.status(403).json({ error: 'Invalid password' });
 
-      // Authenticated
       req.manager = manager;
       next();
     });
   });
 };
 
-// ✅ Employee Login Middleware with bcrypt
-exports.verifyEmployeeLogin = (req, res, next) => {
-  const employee_id = req.body.employee_id || req.query.employee_id || req.headers['employee-id'];
-  const password = req.body.password || req.query.password || req.headers['password'];
+// ✅ Employee Middleware
+const verifyEmployeeLogin = (req, res, next) => {
+  const employee_id = req.headers['employee-id'] || req.body.employee_id || req.query.employee_id;
+  const password = req.headers['password'] || req.body.password || req.query.password;
+
+  console.log("🛂 Employee Auth Attempt:", { employee_id, password });
 
   if (!employee_id || !password) {
-    return res.status(401).json({ error: 'Authentication required: Missing credentials.' });
+    return res.status(401).json({ error: 'Missing employee credentials.' });
   }
 
   db.query('SELECT * FROM employees WHERE employee_id = ?', [employee_id], (err, results) => {
-    if (err) return res.status(500).json({ error: 'Database error while verifying credentials.' });
-    if (results.length === 0) return res.status(401).json({ error: 'Invalid employee ID.' });
+    if (err) return res.status(500).json({ error: 'DB error.' });
+    if (results.length === 0) return res.status(401).json({ error: 'Employee not found.' });
 
     const employee = results[0];
-
-    // ✅ Compare hashed password
     bcrypt.compare(password, employee.password, (err, isMatch) => {
-      if (err) return res.status(500).json({ error: 'Password check failed.' });
-      if (!isMatch) return res.status(401).json({ error: 'Invalid employee credentials.' });
+      if (err) return res.status(500).json({ error: 'Password error' });
+      if (!isMatch) return res.status(401).json({ error: 'Invalid password' });
 
       req.employee = employee;
       next();
@@ -54,10 +53,8 @@ exports.verifyEmployeeLogin = (req, res, next) => {
   });
 };
 
-// ✅ Optional Passport Middleware
-exports.ensureAuthenticated = (req, res, next) => {
-  if (req.isAuthenticated()) {
-    return next();
-  }
-  return res.status(401).json({ error: 'You need to log in first.' });
+// ✅ Export them correctly
+module.exports = {
+  verifyManagerLogin,
+  verifyEmployeeLogin,
 };

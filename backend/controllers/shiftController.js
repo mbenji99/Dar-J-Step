@@ -53,7 +53,15 @@ exports.viewShifts = (req, res) => {
   const password = req.query.password || req.body.password || req.headers['password'];
   const manager_id = req.query.manager_id || req.body.manager_id || req.headers['manager-id'];
 
+  // Employee view
   if (employee_id && password) {
+    console.log("🔍 ShiftController.viewShifts called");
+    console.log("Employee ID:", employee_id);
+    console.log("Password:", password);
+    console.log("Request Query:", req.query);
+    console.log("Request Body:", req.body);
+    console.log("Request Headers:", req.headers);
+
     db.query('SELECT * FROM employees WHERE employee_id = ?', [employee_id], (err, result) => {
       if (err) return res.status(500).json({ error: 'Database error while verifying employee.' });
       if (result.length === 0) return res.status(404).json({ error: 'Employee not found.' });
@@ -62,11 +70,13 @@ exports.viewShifts = (req, res) => {
 
       bcrypt.compare(password, employee.password, (err, isMatch) => {
         if (err) return res.status(500).json({ error: 'Password check failed.' });
-        if (!isMatch) return res.status(401).json({ error: 'Invalid credentials.' });
+        if (!isMatch) return res.status(401).json({ error: 'Incorrect password' });
 
         db.query('SELECT * FROM shifts WHERE employee_id = ?', [employee_id], (err, results) => {
-          if (err) return res.status(500).json({ error: 'Failed to fetch shifts' });
-
+          if (err) {
+            console.error("❌ Shift DB fetch error:", err);
+            return res.status(500).json({ error: 'Failed to fetch shifts' });
+          }
           const formattedShifts = results.map(shift => ({
             ...shift,
             day_of_week: new Date(shift.shift_date).toLocaleString('en-US', { weekday: 'long' }),
@@ -77,6 +87,8 @@ exports.viewShifts = (req, res) => {
         });
       });
     });
+
+  // Manager view
   } else if (manager_id) {
     db.query('SELECT * FROM managers WHERE manager_id = ?', [manager_id], (err, result) => {
       if (err) return res.status(500).json({ error: 'Database query failed' });
@@ -99,7 +111,7 @@ exports.viewShifts = (req, res) => {
   }
 };
 
-// ✅ Edit Shift (Manager only)
+// ✅ Edit Shift
 exports.editShift = (req, res) => {
   const shift_id = req.params.shift_id;
   const { shift_date, start_time, end_time } = req.body;
@@ -123,7 +135,7 @@ exports.editShift = (req, res) => {
   });
 };
 
-// ✅ Delete Shift (Manager only)
+// ✅ Delete Shift
 exports.deleteShift = (req, res) => {
   const shift_id = req.params.shift_id;
 
