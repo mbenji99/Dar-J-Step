@@ -7,8 +7,8 @@ const {
 } = require('../middleware/authMiddleware');
 
 // Debug logs — to confirm middleware loaded
-console.log("🔍 verifyManagerLogin type:", typeof verifyManagerLogin);
-console.log("🔍 verifyEmployeeLogin type:", typeof verifyEmployeeLogin);
+console.log("verifyManagerLogin type:", typeof verifyManagerLogin);
+console.log("verifyEmployeeLogin type:", typeof verifyEmployeeLogin);
 
 router.post('/login/manager', loginController.managerLogin);
 router.post('/login/employee', loginController.employeeLogin);

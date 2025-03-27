@@ -30,9 +30,9 @@ function CreateShift() {
         {
           headers: {
             'manager-id': localStorage.getItem('manager-id'),
-            'password1': localStorage.getItem('password'), // ✅ This MUST be 'password1'
+            'password1': localStorage.getItem('password'), 
           },
-          withCredentials: true, // optional but safe for session cookies
+          withCredentials: true, 
         }
       );      
 

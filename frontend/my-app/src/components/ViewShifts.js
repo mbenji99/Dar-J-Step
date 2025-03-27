@@ -50,8 +50,8 @@ function ViewShifts() {
           shifts.map((shift, index) => (
             <div key={index}>
               <p>
-                📅 <strong>{shift.formatted_date}</strong> ({shift.day_of_week})<br />
-                🕒 <strong>{shift.start_time}</strong> - <strong>{shift.end_time}</strong>
+                <strong>{shift.formatted_date}</strong> ({shift.day_of_week})<br />
+                <strong>{shift.start_time}</strong> - <strong>{shift.end_time}</strong>
               </p>
               <hr />
             </div>

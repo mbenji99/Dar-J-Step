@@ -1,7 +1,7 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 
-// ✅ Create Shift (Manager only)
+//Create Shift (Manager only)
 exports.createShift = (req, res) => {
   const manager_id = req.headers['manager-id'];
   const password = req.headers['password1'];
@@ -47,7 +47,7 @@ exports.createShift = (req, res) => {
   });
 };
 
-// ✅ View Shifts (Employee or Manager)
+//View Shifts (Employee or Manager)
 exports.viewShifts = (req, res) => {
   const employee_id = req.query.employee_id || req.body.employee_id || req.headers['employee-id'];
   const password = req.query.password || req.body.password || req.headers['password'];
@@ -55,7 +55,7 @@ exports.viewShifts = (req, res) => {
 
   // Employee view
   if (employee_id && password) {
-    console.log("🔍 ShiftController.viewShifts called");
+    console.log("ShiftController.viewShifts called");
     console.log("Employee ID:", employee_id);
     console.log("Password:", password);
     console.log("Request Query:", req.query);
@@ -74,7 +74,7 @@ exports.viewShifts = (req, res) => {
 
         db.query('SELECT * FROM shifts WHERE employee_id = ?', [employee_id], (err, results) => {
           if (err) {
-            console.error("❌ Shift DB fetch error:", err);
+            console.error("Shift DB fetch error:", err);
             return res.status(500).json({ error: 'Failed to fetch shifts' });
           }
           const formattedShifts = results.map(shift => ({
@@ -111,7 +111,7 @@ exports.viewShifts = (req, res) => {
   }
 };
 
-// ✅ Edit Shift
+//Edit Shift
 exports.editShift = (req, res) => {
   const shift_id = req.params.shift_id;
   const { shift_date, start_time, end_time } = req.body;
@@ -135,7 +135,7 @@ exports.editShift = (req, res) => {
   });
 };
 
-// ✅ Delete Shift
+//Delete Shift
 exports.deleteShift = (req, res) => {
   const shift_id = req.params.shift_id;
 

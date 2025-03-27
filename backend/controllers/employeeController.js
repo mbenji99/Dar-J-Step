@@ -51,7 +51,7 @@ exports.clockOut = (req, res) => {
   });
 };
 
-// ✅ Check Clock-In Status
+//Check Clock-In Status
 exports.checkClockStatus = (req, res) => {
   const { employee_id } = req.employee;
 

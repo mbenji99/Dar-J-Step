@@ -1,12 +1,12 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 
-// ✅ Manager Middleware
+// Manager Middleware
 const verifyManagerLogin = (req, res, next) => {
   const manager_id = req.headers['manager-id'] || req.body.manager_id || req.query.manager_id;
   const password = req.headers['password1'] || req.body.password || req.query.password;
 
-  console.log("🛂 Manager Auth Attempt:", { manager_id, password });
+  console.log("Manager Auth Attempt:", { manager_id, password });
 
   if (!manager_id || !password) {
     return res.status(401).json({ error: 'Missing manager credentials.' });
@@ -27,12 +27,12 @@ const verifyManagerLogin = (req, res, next) => {
   });
 };
 
-// ✅ Employee Middleware
+//Employee Middleware
 const verifyEmployeeLogin = (req, res, next) => {
   const employee_id = req.headers['employee-id'] || req.body.employee_id || req.query.employee_id;
   const password = req.headers['password'] || req.body.password || req.query.password;
 
-  console.log("🛂 Employee Auth Attempt:", { employee_id, password });
+  console.log("Employee Auth Attempt:", { employee_id, password });
 
   if (!employee_id || !password) {
     return res.status(401).json({ error: 'Missing employee credentials.' });
@@ -53,7 +53,7 @@ const verifyEmployeeLogin = (req, res, next) => {
   });
 };
 
-// ✅ Export them correctly
+//Export them correctly
 module.exports = {
   verifyManagerLogin,
   verifyEmployeeLogin,

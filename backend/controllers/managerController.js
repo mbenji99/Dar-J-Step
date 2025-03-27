@@ -2,7 +2,7 @@ const db = require('../config/db');
 const scheduleController = require('./scheduleController');
 const shiftController = require('./shiftController');
 
-// ✅ Generate a Report
+//Generate a Report
 exports.generateReport = (req, res) => {
     const { reportType, startDate, endDate } = req.query;
 
@@ -23,7 +23,7 @@ exports.generateReport = (req, res) => {
             return res.status(500).json({ error: 'Failed to generate report' });
         }
 
-        // ✅ Structure report by employee
+        //Structure report by employee
         const report = {};
         results.forEach((shift) => {
             if (!report[shift.employee_id]) {
@@ -50,7 +50,7 @@ exports.generateReport = (req, res) => {
     });
 };
 
-// ✅ Adjust Clock-In/Out Times
+//Adjust Clock-In/Out Times
 exports.adjustClockInOut = (req, res) => {
     const { log_id, new_clock_in_time, new_clock_out_time } = req.body;
 
@@ -88,12 +88,12 @@ exports.adjustClockInOut = (req, res) => {
     });
 };
 
-// ✅ Reuse ShiftController Methods
+//Reuse ShiftController Methods
 exports.createShift = shiftController.createShift;
 exports.editShift = shiftController.editShift;
 exports.deleteShift = shiftController.deleteShift;
 
-// ✅ Generic Shift Management
+//Generic Shift Management
 exports.manageShift = (req, res) => {
     switch (req.method) {
         case 'POST':
@@ -107,7 +107,7 @@ exports.manageShift = (req, res) => {
     }
 };
 
-// ✅ Schedule Methods
+//Schedule Methods
 exports.createSchedule = scheduleController.createSchedule;
 exports.getAllSchedules = scheduleController.getAllSchedules;
 exports.getScheduleById = scheduleController.getScheduleById;
@@ -115,7 +115,7 @@ exports.editSchedule = scheduleController.editSchedule;
 exports.deleteSchedule = scheduleController.deleteSchedule;
 exports.assignShiftToDay = scheduleController.assignShiftToDay;
 
-// ✅ Generic Schedule Management
+//Generic Schedule Management
 exports.manageSchedule = (req, res) => {
     const { action } = req.query;
 

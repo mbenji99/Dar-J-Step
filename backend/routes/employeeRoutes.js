@@ -6,15 +6,15 @@ const scheduleController = require('../controllers/scheduleController');
 const { verifyEmployeeLogin } = require('../middleware/authMiddleware');
 const db = require('../config/db');
 
-console.log("✅ Loaded employeeController and routes");
+console.log("Loaded employeeController and routes");
 
-// ✅ Clock in
+//Clock in
 router.post('/clock-in', verifyEmployeeLogin, employeeController.clockIn);
 
-// ✅ Clock out
+// Clock out
 router.post('/clock-out', verifyEmployeeLogin, employeeController.clockOut);
 
-// ✅ Clock status check
+//Clock status check
 router.post('/clock-status', verifyEmployeeLogin, (req, res) => {
   const employee = req.employee;
 
@@ -25,7 +25,7 @@ router.post('/clock-status', verifyEmployeeLogin, (req, res) => {
     [employee.employee_id],
     (err, results) => {
       if (err) {
-        console.error('❌ Error checking clock status:', err);
+        console.error('Error checking clock status:', err);
         return res.status(500).json({ error: 'Internal server error.' });
       }
 
@@ -35,10 +35,10 @@ router.post('/clock-status', verifyEmployeeLogin, (req, res) => {
   );
 });
 
-// ✅ View shifts
+//View shifts
 router.get('/view-shift', verifyEmployeeLogin, shiftController.viewShifts);
 
-// ✅ View schedule
+//View schedule
 router.get('/view-schedule', verifyEmployeeLogin, scheduleController.viewSchedule);
 
 module.exports = router;

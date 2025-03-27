@@ -13,7 +13,7 @@ db.connect((err) => {
   if (err) {
     console.error('Database connection failed:', err);
   } else {
-    console.log('✅ Connected to database.');
+    console.log('Connected to database.');
   }
 });
 
@@ -30,11 +30,11 @@ exports.managerLogin = (req, res) => {
     if (results.length === 0) return res.status(401).json({ error: 'Manager not found.' });
 
     const manager = results[0];
-    console.log("🔐 Manager login attempt:", { manager_id, password });
-    console.log("🧠 Stored hash:", manager.password);
+    console.log("Manager login attempt:", { manager_id, password });
+    console.log("Stored hash:", manager.password);
 
     const isMatch = await bcrypt.compare(password, manager.password);
-    console.log("✅ Password match:", isMatch);
+    console.log("Password match:", isMatch);
 
     if (!isMatch) return res.status(401).json({ error: 'Incorrect password.' });
 
@@ -46,7 +46,7 @@ exports.managerLogin = (req, res) => {
 exports.employeeLogin = (req, res) => {
     const { employee_id, password } = req.body;
   
-    console.log("🔐 Login attempt:", { employee_id, password });
+    console.log("Login attempt:", { employee_id, password });
   
     if (!employee_id || !password) {
       return res.status(400).json({ error: 'Employee ID and password are required.' });
@@ -54,21 +54,21 @@ exports.employeeLogin = (req, res) => {
   
     db.query('SELECT * FROM employees WHERE employee_id = ?', [employee_id], async (err, results) => {
       if (err) {
-        console.error("❌ DB Error:", err);
+        console.error("DB Error:", err);
         return res.status(500).json({ error: 'Database error during login.' });
       }
   
       if (results.length === 0) {
-        console.warn("⚠️ No employee found.");
+        console.warn("No employee found.");
         return res.status(401).json({ error: 'Employee not found.' });
       }
   
       const employee = results[0];
-      console.log("🧠 Stored Hash:", employee.password);
+      console.log("Stored Hash:", employee.password);
   
       try {
         const isMatch = await bcrypt.compare(password, employee.password);
-        console.log("✅ Password match result:", isMatch);
+        console.log("Password match result:", isMatch);
   
         if (!isMatch) {
           return res.status(401).json({ error: 'Incorrect password.' });
@@ -76,7 +76,7 @@ exports.employeeLogin = (req, res) => {
   
         res.status(200).json({ message: 'Employee login successful.', user: employee });
       } catch (error) {
-        console.error("❌ Bcrypt error:", error);
+        console.error("Bcrypt error:", error);
         res.status(500).json({ error: 'Password verification failed.' });
       }
     });

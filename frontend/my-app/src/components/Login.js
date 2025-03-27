@@ -40,7 +40,7 @@ function Login({ role: initialRole }) {
         },
       });
 
-      console.log("✅ Login successful:", response.data);
+      console.log("Login successful:", response.data);
 
       setSuccess(response.data.message || "Login successful");
       setError("");
@@ -60,7 +60,7 @@ function Login({ role: initialRole }) {
       setTimeout(() => window.location.reload(), 100); 
 
     } catch (err) {
-      console.error("❌ Login error:", err.response || err.message);
+      console.error("Login error:", err.response || err.message);
       setError(err.response?.data?.error || "Login failed");
       setSuccess("");
     }

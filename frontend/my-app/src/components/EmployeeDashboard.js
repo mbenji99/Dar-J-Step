@@ -14,23 +14,23 @@ function EmployeeDashboard() {
   const employeeId = localStorage.getItem("employee-id");
   const password = localStorage.getItem("password");
 
-  console.log("🧪 LocalStorage credentials:", { employeeId, password });
+  console.log("LocalStorage credentials:", { employeeId, password });
 
   const fetchShiftsAndSchedule = useCallback(async () => {
     try {
       setLoading(true);
-      console.log("📡 Fetching shifts...");
+      console.log("Fetching shifts...");
 
       const shiftData = await viewShift();
-      console.log("✅ Shift Data:", shiftData);
+      console.log("Shift Data:", shiftData);
       setShifts(shiftData.shifts || []);
-      console.log("🔎 Shifts to render:", shiftData.shifts);
+      console.log("Shifts to render:", shiftData.shifts);
 
-      console.log("📡 Fetching schedule...");
+      console.log("Fetching schedule...");
       const scheduleData = await viewSchedule();
       setSchedule(scheduleData || []);
     } catch (err) {
-      console.error("❌ Fetch Error:", err);
+      console.error("Fetch Error:", err);
       setError(err.error || "Failed to fetch data.");
     } finally {
       setLoading(false);
@@ -39,7 +39,7 @@ function EmployeeDashboard() {
 
   const checkClockStatus = useCallback(async () => {
     try {
-      console.log("⏱️ Checking clock status...");
+      console.log("Checking clock status...");
       const response = await fetch(`http://localhost:3000/api/employee/clock-status`, {
         method: "POST",
         headers: {
@@ -50,10 +50,10 @@ function EmployeeDashboard() {
       });
 
       const data = await response.json();
-      console.log("🕒 Clock Status Response:", data);
+      console.log("Clock Status Response:", data);
       setClockedIn(data.clockedIn);
     } catch (err) {
-      console.error("❌ Clock status check failed:", err);
+      console.error("Clock status check failed:", err);
     }
   }, [employeeId, password]);
 

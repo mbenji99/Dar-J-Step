@@ -1,7 +1,7 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 
-// ✅ Create schedule by copying shifts for employee
+//Create schedule by copying shifts for employee
 exports.createSchedule = (req, res) => {
   const { employee_id } = req.body;
 
@@ -24,7 +24,7 @@ exports.createSchedule = (req, res) => {
   });
 };
 
-// ✅ Get all schedules (grouped by employee)
+//Get all schedules (grouped by employee)
 exports.getAllSchedules = (req, res) => {
   const query = `
     SELECT s.schedule_id, s.employee_id, e.employee_name, s.shift_date, s.start_time, s.end_time
@@ -56,7 +56,7 @@ exports.getAllSchedules = (req, res) => {
   });
 };
 
-// ✅ View schedule for a specific employee or manager
+//View schedule for a specific employee or manager
 exports.viewSchedule = (req, res) => {
   const employee_id = req.query.employee_id || req.body.employee_id || req.headers['employee-id'];
   const password = req.query.password || req.body.password || req.headers['password'];
@@ -106,7 +106,7 @@ exports.viewSchedule = (req, res) => {
   }
 };
 
-// ✅ Edit schedule (edit shift details)
+//Edit schedule (edit shift details)
 exports.editSchedule = (req, res) => {
   const { shift_id, shift_date, start_time, end_time } = req.body;
 
@@ -127,7 +127,7 @@ exports.editSchedule = (req, res) => {
   });
 };
 
-// ✅ Delete all schedules for an employee
+//Delete all schedules for an employee
 exports.deleteSchedule = (req, res) => {
   const employee_id = req.params.id;
 
