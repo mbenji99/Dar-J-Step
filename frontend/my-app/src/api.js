@@ -7,7 +7,7 @@ const apiClient = axios.create({
 });
 
 // 🧠 Helper: Get employee headers
-const getEmployeeAuthHeaders = () => {
+export const getEmployeeAuthHeaders = () => {
   const headers = {
     'employee-id': localStorage.getItem('employee-id'),
     'password': localStorage.getItem('password'),
@@ -17,7 +17,7 @@ const getEmployeeAuthHeaders = () => {
 };
 
 // 🧠 Helper: Get manager headers
-const getManagerAuthHeaders = () => {
+export const getManagerAuthHeaders = () => {
   const headers = {
     'manager-id': localStorage.getItem('manager-id'),
     'password1': localStorage.getItem('password'),
@@ -175,5 +175,20 @@ export const viewManagerSchedule = async () => {
   } catch (error) {
     console.error("❌ viewManagerSchedule error:", error.response?.data || error.message);
     throw error.response?.data || { error: 'Failed to fetch manager schedule' };
+  }
+};
+
+// ========== NEW: SCHEDULE EDITING ==========
+export const editSchedule = async (shiftId, updateData) => {
+  console.log("✏️ Editing schedule:", shiftId, updateData);
+  try {
+    const response = await apiClient.put(`/schedule/edit/${shiftId}`, updateData, {
+      headers: getManagerAuthHeaders(),
+    });
+    console.log("✅ Schedule updated:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("❌ editSchedule error:", error.response?.data || error.message);
+    throw error.response?.data || { error: 'Failed to update schedule.' };
   }
 };
